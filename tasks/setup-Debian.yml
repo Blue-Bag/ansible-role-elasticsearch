@@ -10,5 +10,7 @@
     state: present
     update_cache: yes
 
+
+# echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-5.x.list
 - name: Install Elasticsearch.
   apt: pkg=elasticsearch state=present
