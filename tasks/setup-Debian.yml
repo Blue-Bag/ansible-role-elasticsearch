@@ -1,15 +1,35 @@
 ---
+- name: Install repository management dependencies.
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+
 - name: Add Elasticsearch apt key.
   ansible.builtin.get_url:
     url: https://packages.elastic.co/GPG-KEY-elasticsearch
     dest: /etc/apt/trusted.gpg.d/elasticsearch.asc
     mode: "0644"
 
+- name: Remove legacy Elasticsearch repository list file.
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/elasticsearch.list
+    state: absent
+
 - name: Add Elasticsearch repository.
-  apt_repository:
-    repo: 'deb http://packages.elastic.co/elasticsearch/2.x/debian stable main'
+  ansible.builtin.deb822_repository:
+    name: elasticsearch
+    types: deb
+    uris: http://packages.elastic.co/elasticsearch/2.x/debian
+    suites: stable
+    components: main
+    signed_by: /etc/apt/trusted.gpg.d/elasticsearch.asc
     state: present
-    update_cache: yes
+  register: elasticsearch_repo
+
+- name: Update apt cache after adding repository.
+  ansible.builtin.apt:
+    update_cache: true
+  when: elasticsearch_repo.changed
 
 
 # echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-5.x.list
